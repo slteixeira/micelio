@@ -1,0 +1,30 @@
+{
+  "lexicon": 1,
+  "id": "org.micelio.rsvp",
+  "defs": {
+    "main": {
+      "type": "record",
+      "description": "An attendance record stored in the attendee's own repo, pointing at an event via strongRef. Mirrors app.bsky.feed.like.",
+      "key": "tid",
+      "record": {
+        "type": "object",
+        "required": ["subject", "createdAt"],
+        "properties": {
+          "subject": {
+            "type": "ref",
+            "ref": "com.atproto.repo.strongRef"
+          },
+          "status": {
+            "type": "string",
+            "knownValues": ["going", "interested"],
+            "default": "going"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "datetime"
+          }
+        }
+      }
+    }
+  }
+}

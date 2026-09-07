@@ -1,0 +1,81 @@
+{
+  "lexicon": 1,
+  "id": "org.micelio.event",
+  "defs": {
+    "main": {
+      "type": "record",
+      "description": "An organizing event: title, time, location, and a soft visibility hint. Not an access-control mechanism — see PROJECT.md.",
+      "key": "tid",
+      "record": {
+        "type": "object",
+        "required": ["title", "createdAt", "startsAt"],
+        "properties": {
+          "title": {
+            "type": "string",
+            "maxLength": 300,
+            "maxGraphemes": 150
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 3000,
+            "maxGraphemes": 1000
+          },
+          "startsAt": {
+            "type": "string",
+            "format": "datetime"
+          },
+          "endsAt": {
+            "type": "string",
+            "format": "datetime"
+          },
+          "location": {
+            "type": "union",
+            "refs": [
+              "#geoLocation",
+              "#addressLocation",
+              "#onlineLocation"
+            ]
+          },
+          "coverImage": {
+            "type": "blob",
+            "accept": ["image/png", "image/jpeg", "image/webp"],
+            "maxSize": 2000000
+          },
+          "visibility": {
+            "type": "string",
+            "knownValues": ["public", "restricted"],
+            "default": "public",
+            "description": "UI hint only. atproto records are public once federated — this is not real access control."
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "datetime"
+          }
+        }
+      }
+    },
+    "geoLocation": {
+      "type": "object",
+      "required": ["lat", "lng"],
+      "properties": {
+        "lat": { "type": "float" },
+        "lng": { "type": "float" },
+        "name": { "type": "string", "maxLength": 200 }
+      }
+    },
+    "addressLocation": {
+      "type": "object",
+      "required": ["address"],
+      "properties": {
+        "address": { "type": "string", "maxLength": 500 }
+      }
+    },
+    "onlineLocation": {
+      "type": "object",
+      "required": ["url"],
+      "properties": {
+        "url": { "type": "string", "format": "uri" }
+      }
+    }
+  }
+}

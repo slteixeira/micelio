@@ -1,0 +1,14 @@
+services:
+  pds:
+    image: ghcr.io/bluesky-social/pds:0.4
+    container_name: micelio-pds
+    restart: unless-stopped
+    volumes:
+      - pds-data:/pds
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+
+volumes:
+  pds-data:

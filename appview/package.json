@@ -1,0 +1,20 @@
+{
+  "name": "micelio-appview",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node --watch --env-file=.env src/index.js",
+    "start": "node --env-file=.env src/index.js",
+    "dev:pds": "node scripts/dev-pds.js"
+  },
+  "dependencies": {
+    "@atproto/api": "^0.13.35",
+    "@fastify/cors": "^9.0.1",
+    "better-sqlite3": "^11.10.0",
+    "fastify": "^4.28.1"
+  },
+  "devDependencies": {
+    "@atproto/dev-env": "^0.6.4"
+  }
+}
