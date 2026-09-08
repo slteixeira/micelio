@@ -3,6 +3,9 @@ import { sveltekit } from '@sveltejs/kit/vite';
 import { defineConfig } from 'vite';
 
 export default defineConfig({
+	// atproto loopback OAuth requires 127.0.0.1, not "localhost" (see
+	// src/lib/atproto.svelte.ts) — bind the dev server there directly.
+	server: { host: '127.0.0.1' },
 	plugins: [
 		sveltekit({
 			compilerOptions: {

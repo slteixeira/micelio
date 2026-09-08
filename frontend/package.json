@@ -12,7 +12,9 @@
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch"
 	},
 	"dependencies": {
-		"@atproto/api": "^0.13.35"
+		"@atproto/api": "^0.13.35",
+		"@atproto/oauth-client-browser": "^0.5.4",
+		"@atproto/oauth-types": "^0.7.5"
 	},
 	"devDependencies": {
 		"@sveltejs/adapter-auto": "^7.0.1",

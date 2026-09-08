@@ -5,7 +5,7 @@ import { writeFileSync } from "node:fs";
 // Boots a network, seeds one account + one sample event, writes appview/.env
 // pointing at it, then stays up until Ctrl-C.
 
-const network = await TestNetworkNoAppView.create({ pds: { port: 2583 } });
+const network = await TestNetworkNoAppView.create({ pds: { port: 2583 }, plc: { port: 2582 } });
 const agent = network.pds.getAgent();
 
 const { data: account } = await agent.createAccount({
@@ -21,7 +21,7 @@ const { data: event } = await agent.com.atproto.repo.createRecord({
   validate: false, // PDS has no local copy of our lexicon registered
   record: {
     title: "Assembleia de bairro",
-    description: "Monthly neighborhood organizing meeting.",
+    description: "Reunião mensal de organização do bairro.",
     startsAt: now,
     location: { $type: "org.micelio.event#addressLocation", address: "Praça da Sé, São Paulo" },
     visibility: "public",
@@ -38,6 +38,7 @@ console.log(`PDS running at ${network.pds.url}`);
 console.log(`Seed account: did=${account.did} handle=maria.test password=hunter2`);
 console.log(`Seed event: ${event.uri}`);
 console.log(`Admin token: dev-admin-token`);
+console.log(`PLC directory at ${network.plc.url} — set frontend PUBLIC_PLC_URL to this (already the .env.example default).`);
 console.log(`appview/.env written. Run "npm run dev" in another terminal.`);
 console.log(`Ctrl-C to stop.`);
 

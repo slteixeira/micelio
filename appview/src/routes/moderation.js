@@ -3,6 +3,7 @@ import { getEvent, eventUri } from "../pds.js";
 import { hideEvent, unhideEvent, listReportedEvents, isHidden } from "../moderation.js";
 import { getInterest } from "../counter.js";
 import { requireAdmin } from "../adminAuth.js";
+import { listAllComments } from "../comments.js";
 
 export default async function moderationRoutes(app) {
   // No PDS round-trip needed: hiding is keyed by URI, which is derivable
@@ -38,5 +39,26 @@ export default async function moderationRoutes(app) {
       }),
     );
     return events;
+  });
+
+  // No report step for comments (unlike events) — this is the only way a
+  // moderator finds abuse. Event titles are resolved per comment, cached
+  // per-request since many comments usually share one event.
+  app.get("/moderation/comments", { preHandler: requireAdmin }, async () => {
+    const comments = listAllComments();
+    const eventCache = new Map();
+    return Promise.all(
+      comments.map(async (c) => {
+        if (!eventCache.has(c.eventUri)) {
+          const uri = new AtUri(c.eventUri);
+          eventCache.set(
+            c.eventUri,
+            getEvent(uri.hostname, uri.rkey).catch(() => null),
+          );
+        }
+        const event = await eventCache.get(c.eventUri);
+        return { ...c, eventTitle: event?.title ?? null };
+      }),
+    );
   });
 }
