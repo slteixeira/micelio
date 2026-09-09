@@ -66,6 +66,40 @@ export async function listEvents() {
   return events;
 }
 
+// "going" counts, honestly: RSVPs live in each attendee's own repo, never
+// the event's, so this is the same O(repos) fanout as listEvents() rather
+// than a cheap lookup — acceptable at this scale (see pds.js top comment).
+async function goingCountsFromPds() {
+  const { data } = await agent.com.atproto.sync.listRepos({});
+  const counts = new Map();
+
+  for (const repo of data.repos) {
+    let cursor;
+    do {
+      const res = await agent.com.atproto.repo.listRecords({
+        repo: repo.did,
+        collection: RSVP_COLLECTION,
+        cursor,
+      });
+      for (const { value } of res.data.records) {
+        if (value.status !== "going" || !value.subject?.uri) continue;
+        counts.set(value.subject.uri, (counts.get(value.subject.uri) ?? 0) + 1);
+      }
+      cursor = res.data.cursor;
+    } while (cursor);
+  }
+
+  return counts;
+}
+
+export async function getGoingCounts() {
+  if (INDEXER_ENABLED) {
+    const { countGoingBySubject } = await import("./indexerDb.js");
+    return countGoingBySubject();
+  }
+  return goingCountsFromPds();
+}
+
 export async function getEvent(did, rkey) {
   if (INDEXER_ENABLED) {
     const { getIndexedEvent } = await import("./indexerDb.js");

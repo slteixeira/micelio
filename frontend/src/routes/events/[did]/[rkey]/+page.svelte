@@ -2,7 +2,9 @@
   import { authState, createGoingState, errorMessage, blobUrl } from "$lib/atproto.svelte";
   import { markInterested, reportEvent, postComment } from "$lib/appview";
   import Stamp from "$lib/components/Stamp.svelte";
+  import DateStub from "$lib/components/DateStub.svelte";
   import ImageCarousel from "$lib/components/ImageCarousel.svelte";
+  import MastheadBand from "$lib/components/MastheadBand.svelte";
 
   let { data } = $props();
   let event = $state(data.event);
@@ -59,10 +61,20 @@
   }
 </script>
 
-<article>
-  <h1 class="title">{event.title}</h1>
+<MastheadBand compact description="detalhes do evento" />
 
-  <ImageCarousel {images} />
+<article>
+  {#if images.length > 0}
+    <div class="image-wrap">
+      <ImageCarousel {images} />
+      <div class="date-corner">
+        <DateStub date={new Date(event.startsAt)} numeralSize={42} />
+      </div>
+    </div>
+  {/if}
+
+  <div class="content">
+  <h1 class="title">{event.title}</h1>
 
   <div class="meta-strip">
     <div class="meta">
@@ -95,7 +107,9 @@
   {#if going.state.error}<p class="error">{going.state.error}</p>{/if}
 
   <p class="counts">
-    {event.interested} {event.interested === 1 ? "interessado" : "interessados"} (anônimo, não verificado)
+    {event.going ?? 0} {event.going === 1 ? "vai" : "vão"} ·
+    {event.interested} {event.interested === 1 ? "interessado" : "interessados"} (anônimo, não
+    verificado)
   </p>
 
   {#if reporting}
@@ -104,7 +118,7 @@
         <p class="report-status">{reportStatus}</p>
       {:else}
         <input bind:value={reportReason} placeholder="motivo (opcional)" />
-        <Stamp variant="orange" onclick={reportClick}>enviar denúncia</Stamp>
+        <Stamp variant="accent" onclick={reportClick}>enviar denúncia</Stamp>
       {/if}
     </div>
   {/if}
@@ -115,7 +129,9 @@
   </div>
 
   <section class="comments">
-    <h2 class="comments-title">comentários ({comments.length}) <span class="tag">anônimo, não verificado</span></h2>
+    <h2 class="comments-title">
+      comentários ({comments.length}) <span class="tag">anônimo, não verificado</span>
+    </h2>
 
     {#if comments.length === 0}
       <p class="empty">nenhum comentário ainda</p>
@@ -146,21 +162,34 @@
     </div>
     {#if commentError}<p class="error">{commentError}</p>{/if}
   </section>
+  </div>
 </article>
 
 <style>
   article {
     max-width: 820px;
-    margin-top: 34px;
+    margin-top: 22px;
+    background: var(--plate);
+  }
+  .content {
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 18px;
+    padding: 22px 24px 26px;
+  }
+  .image-wrap {
+    position: relative;
+  }
+  .date-corner {
+    position: absolute;
+    top: 0;
+    left: 0;
+    pointer-events: none;
   }
   .title {
-    font-family: var(--font-display);
-    font-weight: 900;
-    font-size: clamp(38px, 6vw, 64px);
-    line-height: 0.92;
+    font-family: var(--m-display);
+    font-size: clamp(28px, 3.2vw, 38px);
+    line-height: 1.02;
     text-transform: uppercase;
     overflow-wrap: break-word;
   }
@@ -171,7 +200,7 @@
     display: flex;
     gap: 28px;
     flex-wrap: wrap;
-    font-family: var(--font-mono);
+    font-family: var(--m-mono);
     font-size: 12px;
   }
   .meta {
@@ -181,14 +210,14 @@
   .meta .label {
     text-transform: uppercase;
     letter-spacing: 0.1em;
-    color: var(--bone-dim);
+    color: var(--sage-dim);
   }
   .body {
-    font-family: var(--font-mono);
+    font-family: var(--m-mono);
     font-size: 13px;
-    line-height: 1.6;
-    max-width: 62ch;
-    color: var(--bone-body);
+    line-height: 1.5;
+    max-width: 56ch;
+    color: var(--sage-body);
   }
   .action-bar {
     display: flex;
@@ -197,22 +226,22 @@
     flex-wrap: wrap;
   }
   .report-link {
-    font-family: var(--font-mono);
-    font-size: 11px;
-    color: var(--orange);
+    font-family: var(--m-mono);
+    font-size: 12px;
+    color: var(--ochre);
     cursor: pointer;
     text-transform: uppercase;
     letter-spacing: 0.08em;
   }
   .error {
-    font-family: var(--font-mono);
+    font-family: var(--m-mono);
     font-size: 11px;
-    color: var(--orange);
+    color: var(--ochre);
   }
   .counts {
-    font-family: var(--font-mono);
-    font-size: 11px;
-    color: var(--bone-count);
+    font-family: var(--m-mono);
+    font-size: 12px;
+    color: var(--sage-mute);
   }
   .report-panel {
     display: flex;
@@ -225,28 +254,28 @@
     min-width: 200px;
   }
   .report-status {
-    font-family: var(--font-mono);
-    font-size: 11px;
-    color: var(--bone);
+    font-family: var(--m-mono);
+    font-size: 12px;
+    color: var(--sage);
   }
   .host-block {
-    border-top: var(--rule-faint);
+    border-top: var(--rule);
     padding-top: 12px;
-    font-family: var(--font-mono);
-    font-size: 10px;
-    color: var(--bone-dim);
+    font-family: var(--m-mono);
+    font-size: 11px;
+    color: var(--sage-dim);
     user-select: all;
     word-break: break-all;
   }
   .comments {
     border-top: var(--rule);
-    padding-top: 16px;
+    padding-top: 18px;
     display: flex;
     flex-direction: column;
     gap: 12px;
   }
   .comments-title {
-    font-family: var(--font-mono);
+    font-family: var(--m-mono);
     font-size: 13px;
     text-transform: uppercase;
     letter-spacing: 0.08em;
@@ -255,15 +284,15 @@
     gap: 8px;
   }
   .comments-title .tag {
-    font-size: 10px;
-    color: var(--bone-dim);
+    font-size: 11px;
+    color: var(--sage-dim);
     text-transform: none;
     letter-spacing: normal;
   }
   .empty {
-    font-family: var(--font-mono);
+    font-family: var(--m-mono);
     font-size: 12px;
-    color: var(--bone-dim);
+    color: var(--sage-dim);
   }
   .comment-list {
     display: flex;
@@ -271,7 +300,7 @@
     gap: 10px;
   }
   .comment {
-    border-bottom: var(--rule-faint);
+    border-bottom: var(--rule);
     padding-bottom: 10px;
   }
   .comment-meta {
@@ -281,18 +310,18 @@
     margin-bottom: 4px;
   }
   .comment-name {
-    font-family: var(--font-mono);
-    font-size: 11px;
+    font-family: var(--m-mono);
+    font-size: 12px;
     font-weight: 700;
-    color: var(--bone);
+    color: var(--sage);
   }
   .comment-date {
-    font-family: var(--font-mono);
-    font-size: 10px;
-    color: var(--bone-dim);
+    font-family: var(--m-mono);
+    font-size: 11px;
+    color: var(--sage-dim);
   }
   .comment-body {
-    font-family: var(--font-mono);
+    font-family: var(--m-mono);
     font-size: 13px;
     line-height: 1.5;
     white-space: pre-wrap;
@@ -307,7 +336,7 @@
   .comment-form textarea {
     width: 100%;
     resize: vertical;
-    font-family: var(--font-mono);
+    font-family: var(--m-mono);
     font-size: 13px;
   }
 </style>

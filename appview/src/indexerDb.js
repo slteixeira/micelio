@@ -76,6 +76,11 @@ const tombstoneRsvpStmt = db.prepare(
 const listRsvpsForSubjectStmt = db.prepare(
   `SELECT did, rkey, status, record FROM indexed_rsvps WHERE subject_uri = ? AND tombstoned_at IS NULL`,
 );
+const countGoingBySubjectStmt = db.prepare(`
+  SELECT subject_uri, COUNT(*) AS count FROM indexed_rsvps
+  WHERE status = 'going' AND tombstoned_at IS NULL
+  GROUP BY subject_uri
+`);
 
 const getCursorStmt = db.prepare(`SELECT seq FROM indexer_cursor WHERE id = 1`);
 const setCursorStmt = db.prepare(`
@@ -129,6 +134,12 @@ export function listIndexedRsvpsForSubject(subjectUri) {
   return listRsvpsForSubjectStmt
     .all(subjectUri)
     .map((r) => ({ did: r.did, rkey: r.rkey, status: r.status, ...JSON.parse(r.record) }));
+}
+
+export function countGoingBySubject() {
+  const counts = new Map();
+  for (const row of countGoingBySubjectStmt.all()) counts.set(row.subject_uri, row.count);
+  return counts;
 }
 
 export function getCursor() {

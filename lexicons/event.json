@@ -39,6 +39,7 @@
           "images": {
             "type": "array",
             "items": { "type": "ref", "ref": "#image" },
+            "minLength": 1,
             "maxLength": 4
           },
           "visibility": {

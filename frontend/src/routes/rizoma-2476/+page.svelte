@@ -8,6 +8,8 @@
   } from "$lib/appview";
   import { rkeyFromUri, didFromUri, errorMessage } from "$lib/atproto.svelte";
   import Stamp from "$lib/components/Stamp.svelte";
+  import Tag from "$lib/components/Tag.svelte";
+  import MastheadBand from "$lib/components/MastheadBand.svelte";
 
   const TOKEN_KEY = "micelio-admin-token";
 
@@ -68,26 +70,29 @@
   if (browser && token) load();
 </script>
 
-<div class="head">
-  <h1>FILA</h1>
-  <p class="counts">
-    {counts.open} abertos · {counts.hidden} ocultos
-  </p>
-</div>
+<MastheadBand compact description="fila de moderação" />
+<div class="control-plate">
+  <div class="head">
+    <h1>FILA</h1>
+    <p class="counts">
+      {counts.open} abertos · {counts.hidden} ocultos
+    </p>
+  </div>
 
-<div class="token-row">
-  <input type="password" bind:value={token} placeholder="token de administrador" />
-  <Stamp variant="outline" onclick={load}>carregar fila</Stamp>
-</div>
+  <div class="token-row">
+    <input type="password" bind:value={token} placeholder="token de administrador" />
+    <Stamp variant="outline" onclick={load}>carregar fila</Stamp>
+  </div>
 
-{#if error}<p class="error">{error}</p>{/if}
+  {#if error}<p class="error">{error}</p>{/if}
 
-<div class="filter-row">
-  {#each filters as f}
-    <Stamp size="sm" variant={filter === f ? "primary" : "outline"} onclick={() => (filter = f)}
-      >{filterLabels[f]}</Stamp
-    >
-  {/each}
+  <div class="filter-row">
+    {#each filters as f}
+      <Stamp size="sm" variant={filter === f ? "primary" : "outline"} onclick={() => (filter = f)}
+        >{filterLabels[f]}</Stamp
+      >
+    {/each}
+  </div>
 </div>
 
 {#if filtered.length === 0}
@@ -103,7 +108,7 @@
           {:else}
             <p class="reason">
               {e.reasons ?? "nenhum motivo informado"}
-              {#if e.hidden}<span class="hidden-tag">oculto</span>{/if}
+              {#if e.hidden}<Tag warn>oculto</Tag>{/if}
             </p>
             <p class="event-title">{e.title}</p>
             <p class="meta">{e.reportCount} denúncia(s) · {e.uri}</p>
@@ -112,7 +117,7 @@
         {#if !e.deleted}
           <div class="actions">
             <Stamp
-              variant={e.hidden ? "outline" : "orange"}
+              variant={e.hidden ? "outline" : "accent"}
               onclick={() => toggleHidden(e)}
             >
               {e.hidden ? "reexibir" : "ocultar"}
@@ -127,7 +132,7 @@
   </ul>
 {/if}
 
-<div class="head">
+<div class="control-plate head">
   <h2>COMENTÁRIOS</h2>
   <p class="counts">
     {comments.length} {comments.length === 1 ? "comentário" : "comentários"} · sem fila de
@@ -147,7 +152,7 @@
           <p class="meta">{c.eventTitle ?? "evento não existe mais"} · {c.eventUri}</p>
         </div>
         <div class="actions">
-          <Stamp variant="orange" onclick={() => removeComment(c)}>apagar</Stamp>
+          <Stamp variant="accent" onclick={() => removeComment(c)}>apagar</Stamp>
           <Stamp variant="outline" href={`/events/${didFromUri(c.eventUri)}/${rkeyFromUri(c.eventUri)}`}
             >abrir</Stamp
           >
@@ -167,14 +172,15 @@
   }
   .head h1,
   .head h2 {
-    font-family: var(--font-display);
-    font-size: 40px;
-    font-weight: 900;
+    font-family: var(--m-display-bare);
+    font-size: clamp(26px, 3.4vw, 38px);
+    line-height: 1.02;
+    text-transform: uppercase;
   }
   .counts {
-    font-family: var(--font-mono);
-    font-size: 11px;
-    color: var(--bone-dim);
+    font-family: var(--m-mono);
+    font-size: 12px;
+    color: var(--sage-dim);
   }
   .token-row {
     display: flex;
@@ -187,9 +193,9 @@
     flex: 1;
   }
   .error {
-    font-family: var(--font-mono);
-    font-size: 11px;
-    color: var(--orange);
+    font-family: var(--m-mono);
+    font-size: 12px;
+    color: var(--ochre);
     margin-bottom: 12px;
   }
   .filter-row {
@@ -198,8 +204,9 @@
     margin-bottom: 16px;
   }
   .empty {
-    font-family: var(--font-mono);
-    font-size: 12px;
+    font-family: var(--m-mono);
+    font-size: 13px;
+    background: var(--plate);
     border: var(--rule-dashed);
     padding: 18px;
   }
@@ -208,8 +215,9 @@
     grid-template-columns: minmax(0, 1fr) auto;
     gap: 16px;
     align-items: center;
+    background: var(--plate);
     border-bottom: var(--rule);
-    padding: 14px 0;
+    padding: 14px 16px;
   }
   @media (max-width: 480px) {
     .row {
@@ -220,40 +228,33 @@
     }
   }
   .row.hidden {
-    border-left: 3px solid var(--orange);
+    border-left: 3px solid var(--ochre);
     padding-left: 12px;
   }
   .reason {
-    font-family: var(--font-mono);
+    font-family: var(--m-mono);
     font-size: 12px;
     font-weight: 700;
     display: flex;
     align-items: center;
     gap: 8px;
   }
-  .hidden-tag {
-    background: var(--orange);
-    color: var(--ink-base);
-    font-size: 10px;
-    padding: 2px 6px;
-    letter-spacing: 0.1em;
-  }
   .event-title {
-    font-family: var(--font-display);
-    font-size: 22px;
-    font-weight: 700;
+    font-family: var(--m-display-bare);
+    font-size: 21px;
+    line-height: 1.15;
     margin: 4px 0;
     overflow-wrap: break-word;
   }
   .meta,
   .uri {
-    font-family: var(--font-mono);
-    font-size: 10px;
-    color: var(--bone-dim);
+    font-family: var(--m-mono);
+    font-size: 11px;
+    color: var(--sage-dim);
     word-break: break-all;
   }
   .comment-body {
-    font-family: var(--font-mono);
+    font-family: var(--m-mono);
     font-size: 13px;
     line-height: 1.5;
     white-space: pre-wrap;

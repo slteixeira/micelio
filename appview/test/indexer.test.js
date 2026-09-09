@@ -9,9 +9,8 @@ process.env.RSVP_COLLECTION = "org.micelio.rsvp";
 process.env.PDS_URL = "http://localhost:0";
 
 const { processCommit, applyEventWrite, applyRsvpWrite } = await import("../src/indexer.js");
-const { listIndexedEvents, listIndexedRsvpsForSubject, getCursor } = await import(
-  "../src/indexerDb.js"
-);
+const { listIndexedEvents, listIndexedRsvpsForSubject, countGoingBySubject, getCursor } =
+  await import("../src/indexerDb.js");
 
 const event = (overrides = {}) => ({
   did: "did:example:alice",
@@ -78,6 +77,37 @@ test("fixture_rsvp_subject_ref", () => {
   assert.equal(rsvps.length, 1);
   assert.equal(rsvps[0].status, "going");
   assert.ok(listIndexedEvents().some((e) => e.uri === subjectUri), "joinable against indexed_events");
+});
+
+test("countGoingBySubject only counts status=going, excludes tombstoned", () => {
+  const subjectUri = "at://did:example:organizer/org.micelio.event/counttest";
+  applyRsvpWrite({
+    did: "did:example:a",
+    rkey: "count1",
+    cid: "bafy1",
+    action: "create",
+    seq: 30,
+    record: { subject: { uri: subjectUri, cid: "bafyone" }, status: "going", createdAt: "2026-01-01T00:00:00Z" },
+  });
+  applyRsvpWrite({
+    did: "did:example:b",
+    rkey: "count2",
+    cid: "bafy2",
+    action: "create",
+    seq: 31,
+    record: { subject: { uri: subjectUri, cid: "bafyone" }, status: "interested", createdAt: "2026-01-01T00:00:00Z" },
+  });
+  applyRsvpWrite({
+    did: "did:example:c",
+    rkey: "count3",
+    cid: "bafy3",
+    action: "create",
+    seq: 32,
+    record: { subject: { uri: subjectUri, cid: "bafyone" }, status: "going", createdAt: "2026-01-01T00:00:00Z" },
+  });
+  applyRsvpWrite({ did: "did:example:c", rkey: "count3", cid: "bafy3", action: "delete", seq: 33 });
+
+  assert.equal(countGoingBySubject().get(subjectUri), 1, "one going RSVP survives (interested excluded, tombstoned excluded)");
 });
 
 test("fixture_reconnect_gap (cursor advances across a gap)", () => {

@@ -1,4 +1,4 @@
-import { listEvents, getEvent } from "../pds.js";
+import { listEvents, getEvent, getGoingCounts } from "../pds.js";
 import { incrementInterest, getInterest } from "../counter.js";
 import { addReport, isHidden } from "../moderation.js";
 import { addComment, listComments, deleteComment } from "../comments.js";
@@ -16,17 +16,18 @@ async function resolveEvent(req, reply) {
 
 export default async function eventRoutes(app) {
   app.get("/events", async () => {
-    const events = await listEvents();
+    const [events, going] = await Promise.all([listEvents(), getGoingCounts()]);
     return events
       .filter((e) => !isHidden(e.uri))
-      .map((e) => ({ ...e, interested: getInterest(e.uri) }));
+      .map((e) => ({ ...e, interested: getInterest(e.uri), going: going.get(e.uri) ?? 0 }));
   });
 
   app.get("/events/:did/:rkey", async (req, reply) => {
     const event = await resolveEvent(req, reply);
     if (!event) return;
     if (isHidden(event.uri)) return reply.code(404).send({ error: "event not found" });
-    return { ...event, interested: getInterest(event.uri) };
+    const going = await getGoingCounts();
+    return { ...event, interested: getInterest(event.uri), going: going.get(event.uri) ?? 0 };
   });
 
   // Track 2: anonymous interest counter. No account, no DID, no atproto

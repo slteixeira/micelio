@@ -10,7 +10,7 @@
 	<link rel="icon" href={favicon} />
 </svelte:head>
 
+<IdentityBar />
 <div class="page">
-	<IdentityBar />
 	{@render children()}
 </div>

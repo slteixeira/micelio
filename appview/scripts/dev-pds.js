@@ -14,6 +14,17 @@ const { data: account } = await agent.createAccount({
   password: "hunter2",
 });
 
+// The frontend now requires at least one image per event (create-event
+// form blocks submit without one) — seed with a real one so local dev
+// matches what the app actually produces, not a stale no-image shape.
+const PLACEHOLDER_PNG = Buffer.from(
+  "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=",
+  "base64",
+);
+const upload = await agent.com.atproto.repo.uploadBlob(PLACEHOLDER_PNG, {
+  encoding: "image/png",
+});
+
 const now = new Date().toISOString();
 const { data: event } = await agent.com.atproto.repo.createRecord({
   repo: account.did,
@@ -24,6 +35,7 @@ const { data: event } = await agent.com.atproto.repo.createRecord({
     description: "Reunião mensal de organização do bairro.",
     startsAt: now,
     location: { $type: "org.micelio.event#addressLocation", address: "Praça da Sé, São Paulo" },
+    images: [{ image: upload.data.blob, alt: "" }],
     visibility: "public",
     createdAt: now,
   },

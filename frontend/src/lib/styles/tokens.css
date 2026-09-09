@@ -1,20 +1,28 @@
-/* v4 visual system — see design_handoff_micelio_frontend/README.md */
+/* v5 visual system "Lichen" — see design_handoff_micelio_frontend/README.md */
 :root {
-  --ink-base: #14110f;
-  --ink-card: #191512;
-  --ink-well: #100e0c;
-  --bone: #ede3ce;
-  --orange: #e8471c;
-  --bone-body: rgba(237, 227, 206, 0.8);
-  --bone-dim: rgba(237, 227, 206, 0.6);
-  --bone-count: rgba(237, 227, 206, 0.65);
-  --field-border: rgba(237, 227, 206, 0.45);
-  --rule-strong: 2px solid var(--bone);
-  --rule: 1px solid rgba(237, 227, 206, 0.3);
-  --rule-faint: 1px solid rgba(237, 227, 206, 0.14);
-  --rule-dashed: 1px dashed rgba(237, 227, 206, 0.35);
-  --font-display: "Big Shoulders Stencil Display", sans-serif;
-  --font-mono: "Space Mono", ui-monospace, monospace;
+  --ground: #121210;
+  --plate: #1a1a15;
+  --plate-raised: #22221b;
+  --plate-deep: #0d0d0a;
+  --sage: #cdd4c2;
+  --sage-bright: #e4e8dc;
+  --sage-body: #c3c9b8;
+  --sage-mute: #a9ae9c;
+  --sage-dim: #8e9280;
+  --ochre: #d18b1f;
+  --ochre-deep: #8a4e06;
+  --ink-on-sage: #33352c;
+  --ink-on-sage-mute: #5c5e4f;
+
+  --m-display: "Anton", sans-serif;
+  --m-display-bare: "Anton", sans-serif;
+  --m-mono: "Courier Prime", ui-monospace, monospace;
+
+  /* Rule weights per the component vocabulary (masthead / sub-head / list row / deferred tray) */
+  --rule-5: 5px solid var(--sage);
+  --rule-3: 3px solid var(--sage);
+  --rule: 1px solid rgba(205, 212, 194, 0.2);
+  --rule-dashed: 1px dashed rgba(205, 212, 194, 0.42);
 }
 
 *,
@@ -26,13 +34,15 @@
 html,
 body {
   margin: 0;
-  background: var(--ink-base);
-  color: var(--bone);
+  color: var(--sage);
 }
 
 body {
-  font-family: var(--font-mono);
-  font-size: 12px;
+  font-family: var(--m-mono);
+  font-size: 13px;
+  background-color: var(--ground);
+  background-image: radial-gradient(var(--sage) 0.5px, transparent 0.5px);
+  background-size: 4px 4px;
 }
 
 a {
@@ -61,22 +71,24 @@ p {
 
 input,
 textarea {
-  font-family: inherit;
-  color: inherit;
-  background: var(--ink-well);
-  border: 1px solid var(--field-border);
-  padding: 10px 12px;
+  font-family: var(--m-mono);
   font-size: 13px;
+  color: var(--sage);
+  background: var(--plate-deep);
+  border: 1px solid rgba(205, 212, 194, 0.5);
+  border-radius: 0;
+  padding: 10px 12px;
 }
 
 input:focus,
 textarea:focus {
   outline: none;
-  border-color: var(--orange);
+  border-color: var(--ochre);
 }
 
 .page {
   max-width: 1180px;
   margin: 0 auto;
-  padding: 0 20px 80px;
+  padding: 0 20px 90px;
+  overflow-x: hidden;
 }

@@ -55,7 +55,7 @@
     overflow-x: auto;
     scroll-snap-type: x mandatory;
     gap: 0;
-    border: var(--rule);
+    background: var(--plate-deep);
   }
   .track img {
     flex: 0 0 100%;
@@ -68,9 +68,10 @@
     position: absolute;
     top: 50%;
     transform: translateY(-50%);
-    background: var(--ink-base);
-    color: var(--bone);
-    border: 1px solid var(--bone);
+    background: var(--ground);
+    color: var(--sage);
+    border: 1px solid var(--sage);
+    border-radius: 0;
     width: 32px;
     height: 32px;
     font-size: 18px;
@@ -92,14 +93,14 @@
   .dot {
     width: 8px;
     height: 8px;
-    border-radius: 50%;
-    border: 1px solid var(--bone);
+    border-radius: 0;
+    border: 1px solid var(--sage);
     background: transparent;
     padding: 0;
     cursor: pointer;
   }
   .dot.active {
-    background: var(--orange);
-    border-color: var(--orange);
+    background: var(--ochre);
+    border-color: var(--ochre);
   }
 </style>

@@ -1,6 +1,7 @@
 <script lang="ts">
   import { authState, createEvent, errorMessage, MAX_EVENT_IMAGES } from "$lib/atproto.svelte";
   import Stamp from "$lib/components/Stamp.svelte";
+  import MastheadBand from "$lib/components/MastheadBand.svelte";
 
   let title = $state("");
   let description = $state("");
@@ -40,6 +41,10 @@
   async function submit(e: SubmitEvent) {
     e.preventDefault();
     error = "";
+    if (images.length === 0) {
+      error = "pelo menos uma imagem é obrigatória";
+      return;
+    }
     submitting = true;
     try {
       const res = await createEvent({
@@ -59,19 +64,23 @@
   }
 </script>
 
-<div class="head">
-  <h1>POSTAR UM EVENTO</h1>
-  <p class="note">Isso vai pro seu servidor. Chega até as pessoas pelos coletivos que confiam em você.</p>
-</div>
-
-{#if !authState.did}
-  <p class="need-login">Você precisa <a href="/login">entrar</a> primeiro.</p>
-{:else if resultUri}
-  <div class="success">
-    <p class="uri">{resultUri}</p>
-    <Stamp variant="outline" href="/">ver</Stamp>
+<MastheadBand compact description="postar um evento" />
+<div class="page-plate">
+  <div class="head">
+    <h1>POSTAR UM EVENTO</h1>
+    <p class="note">
+      Isso vai pro seu servidor. Chega até as pessoas pelos coletivos que confiam em você.
+    </p>
   </div>
-{:else}
+
+  {#if !authState.did}
+    <p class="need-login">Você precisa <a href="/login">entrar</a> primeiro.</p>
+  {:else if resultUri}
+    <div class="success">
+      <p class="uri">{resultUri}</p>
+      <Stamp variant="outline" href="/">ver</Stamp>
+    </div>
+  {:else}
   <form onsubmit={submit} class:submitting>
     <label class="field">
       <span class="field-label">título <span class="req">*</span></span>
@@ -94,11 +103,14 @@
       <input bind:value={address} placeholder="Praça da Sé, São Paulo" maxlength="500" />
     </label>
     <label class="field">
-      <span class="field-label">imagens (até {MAX_EVENT_IMAGES})</span>
+      <span class="field-label"
+        >imagens (até {MAX_EVENT_IMAGES}) <span class="req">*</span></span
+      >
       <input
         type="file"
         accept="image/png,image/jpeg,image/webp"
         multiple
+        required={images.length === 0}
         disabled={images.length >= MAX_EVENT_IMAGES}
         onchange={addImages}
       />
@@ -115,7 +127,7 @@
     </label>
 
     <div class="submit-row">
-      <Stamp variant="orange" type="submit" disabled={submitting}>
+      <Stamp variant="accent" type="submit" disabled={submitting}>
         {submitting ? "publicando…" : "publicar"}
       </Stamp>
       <Stamp variant="outline" href="/">cancelar</Stamp>
@@ -125,27 +137,33 @@
       <p class="error">{error}</p>
     {/if}
   </form>
-{/if}
+  {/if}
+</div>
 
 <style>
+  .page-plate {
+    background: var(--plate);
+    padding: 22px 24px 28px;
+    margin-top: 4px;
+  }
   .head {
-    padding: 26px 0 18px;
+    padding: 0 0 18px;
   }
   .head h1 {
-    font-family: var(--font-display);
-    font-size: 40px;
-    font-weight: 900;
+    font-family: var(--m-display-bare);
+    font-size: clamp(26px, 3.4vw, 38px);
+    line-height: 1.02;
     text-transform: uppercase;
   }
   .note {
-    font-family: var(--font-mono);
-    font-size: 11px;
-    color: var(--bone-dim);
+    font-family: var(--m-mono);
+    font-size: 12px;
+    color: var(--sage-mute);
     margin-top: 6px;
   }
   .need-login {
-    font-family: var(--font-mono);
-    font-size: 12px;
+    font-family: var(--m-mono);
+    font-size: 13px;
   }
   form {
     max-width: 640px;
@@ -163,13 +181,13 @@
     gap: 8px;
   }
   .field-label {
-    font-family: var(--font-mono);
-    font-size: 10px;
+    font-family: var(--m-mono);
+    font-size: 11px;
     letter-spacing: 0.12em;
     text-transform: uppercase;
   }
   .req {
-    color: var(--orange);
+    color: var(--ochre);
   }
   input,
   textarea {
@@ -180,12 +198,13 @@
     gap: 8px;
   }
   .error {
-    font-family: var(--font-mono);
-    font-size: 10px;
-    color: var(--orange);
+    font-family: var(--m-mono);
+    font-size: 11px;
+    color: var(--ochre);
   }
   .success {
-    border: var(--rule-strong);
+    background: var(--plate);
+    border: var(--rule-3);
     padding: 14px 16px;
     display: flex;
     align-items: center;
@@ -195,8 +214,8 @@
     max-width: 640px;
   }
   .success .uri {
-    font-family: var(--font-mono);
-    font-size: 10px;
+    font-family: var(--m-mono);
+    font-size: 11px;
     word-break: break-all;
   }
   .image-previews {
@@ -224,9 +243,10 @@
     height: 20px;
     line-height: 18px;
     text-align: center;
-    background: var(--orange);
-    color: var(--ink-base);
-    border: 1px solid var(--ink-base);
+    background: var(--ochre);
+    color: var(--ground);
+    border: 1px solid var(--ground);
+    border-radius: 0;
     cursor: pointer;
     font-weight: 700;
   }
