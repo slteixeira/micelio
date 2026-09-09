@@ -19,7 +19,10 @@ export default async function moderationRoutes(app) {
 
   // Bypasses the hidden-event filter on purpose — this is where a
   // moderator looks at exactly the events flagged and/or already hidden.
-  app.get("/moderation/reports", { preHandler: requireAdmin }, async () => {
+  // Deliberately not "/moderation" — every route here already requires
+  // requireAdmin, but an obscure path cuts down bots/scanners probing
+  // obvious admin paths. Not a real security boundary, just less noise.
+  app.get("/rizoma-2476/reports", { preHandler: requireAdmin }, async () => {
     const reported = listReportedEvents();
     const events = await Promise.all(
       reported.map(async (r) => {
@@ -44,7 +47,7 @@ export default async function moderationRoutes(app) {
   // No report step for comments (unlike events) — this is the only way a
   // moderator finds abuse. Event titles are resolved per comment, cached
   // per-request since many comments usually share one event.
-  app.get("/moderation/comments", { preHandler: requireAdmin }, async () => {
+  app.get("/rizoma-2476/comments", { preHandler: requireAdmin }, async () => {
     const comments = listAllComments();
     const eventCache = new Map();
     return Promise.all(

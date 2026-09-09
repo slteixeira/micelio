@@ -3,6 +3,7 @@ import { incrementInterest, getInterest } from "../counter.js";
 import { addReport, isHidden } from "../moderation.js";
 import { addComment, listComments, deleteComment } from "../comments.js";
 import { requireAdmin } from "../adminAuth.js";
+import { requireChallenge } from "../antibot.js";
 
 async function resolveEvent(req, reply) {
   try {
@@ -33,7 +34,7 @@ export default async function eventRoutes(app) {
   // rate limit only bounds scripted volume, it isn't a trust signal.
   app.post(
     "/events/:did/:rkey/interested",
-    { config: { rateLimit: { max: 10, timeWindow: "1 minute" } } },
+    { config: { rateLimit: { max: 10, timeWindow: "1 minute" } }, preHandler: requireChallenge },
     async (req, reply) => {
       const event = await resolveEvent(req, reply);
       if (!event) return;
@@ -46,7 +47,7 @@ export default async function eventRoutes(app) {
   // account, no dedup. Feeds the moderation queue only.
   app.post(
     "/events/:did/:rkey/report",
-    { config: { rateLimit: { max: 5, timeWindow: "1 minute" } } },
+    { config: { rateLimit: { max: 5, timeWindow: "1 minute" } }, preHandler: requireChallenge },
     async (req, reply) => {
       const event = await resolveEvent(req, reply);
       if (!event) return;
@@ -66,7 +67,7 @@ export default async function eventRoutes(app) {
 
   app.post(
     "/events/:did/:rkey/comments",
-    { config: { rateLimit: { max: 5, timeWindow: "1 minute" } } },
+    { config: { rateLimit: { max: 5, timeWindow: "1 minute" } }, preHandler: requireChallenge },
     async (req, reply) => {
       const event = await resolveEvent(req, reply);
       if (!event) return;

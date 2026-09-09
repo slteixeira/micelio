@@ -1,7 +1,11 @@
 # Spec: Firehose Indexer for `org.micelio.event` / `org.micelio.rsvp`
 
 ## Status
-Draft — not yet triggered for implementation. See "When to build" below.
+Implemented (`appview/src/indexer.js`, `appview/src/indexerDb.js`) and
+passing all fixtures below (`appview/test/indexer.test.js`), but kept off
+by default (`INDEXER_ENABLED=false`) — the trigger condition in "When to
+build this" hasn't actually been hit yet. `pds.js` still reads live from
+the PDS unless the flag is set.
 
 ## Problem
 `appview/src/pds.js:listEvents()` currently does `com.atproto.sync.listRepos`
@@ -145,11 +149,11 @@ consumer isn't done until it passes all of them.
 ---
 
 ## Implementation order
-1. Fixtures written and reviewed (no consumer code yet).
-2. Standalone consumer process, tested against fixtures in isolation
-   (no `pds.js` changes yet).
-3. Only once the consumer passes all fixtures: swap `pds.js`'s
-   `listEvents()`/equivalent rsvp function to read from
-   `indexed_events`/`indexed_rsvps` instead of live repo fanout.
-4. Keep the old fanout code path behind a flag for one release in case
-   the indexer needs to be rolled back.
+1. ~~Fixtures written and reviewed (no consumer code yet).~~ Done.
+2. ~~Standalone consumer process, tested against fixtures in isolation
+   (no `pds.js` changes yet).~~ Done — all fixtures pass.
+3. ~~Swap `pds.js`'s `listEvents()`/equivalent rsvp function to read from
+   `indexed_events`/`indexed_rsvps` instead of live repo fanout.~~ Done,
+   gated behind `INDEXER_ENABLED`.
+4. Old fanout path stays behind that flag — not just "for one release,"
+   but until the trigger condition above is actually hit.

@@ -21,9 +21,21 @@
   let commentError = $state("");
   let posting = $state(false);
 
+  // Not real fraud prevention — cleared storage or a script bypasses it
+  // trivially. Just stops the same person spam-clicking; the number is
+  // already labeled "anônimo, não verificado", and the rate limit +
+  // anti-bot challenge on the appview are the actual floor against abuse.
+  const interestedKey = `micelio-interested:${data.did}/${data.rkey}`;
+  let alreadyInterested = $state(
+    typeof localStorage !== "undefined" && localStorage.getItem(interestedKey) === "1",
+  );
+
   async function interestedClick() {
+    if (alreadyInterested) return;
     const interested = await markInterested(data.did, data.rkey);
     event = { ...event, interested };
+    alreadyInterested = true;
+    localStorage.setItem(interestedKey, "1");
   }
 
   async function reportClick() {
@@ -75,7 +87,9 @@
     {:else}
       <Stamp variant="primary" href="/login">vou</Stamp>
     {/if}
-    <Stamp variant="outline" onclick={interestedClick}>interessado</Stamp>
+    <Stamp variant="outline" onclick={interestedClick} disabled={alreadyInterested}>
+      {alreadyInterested ? "marcado ✓" : "interessado"}
+    </Stamp>
     <button class="report-link" onclick={() => (reporting = !reporting)}>denunciar</button>
   </div>
   {#if going.state.error}<p class="error">{going.state.error}</p>{/if}

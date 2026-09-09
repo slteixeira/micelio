@@ -49,11 +49,12 @@ as a two-track split:
 
 ### Track 2 — Anonymous interest counter
 - No account, no DID, no atproto record at all
-- Plain HTTP endpoint on the App View: `POST /events/:id/interested`
-- Increments a Postgres counter; no long-term session/IP linkage
-- Optional lightweight anti-bot measure (short-lived signed token or
-  client-side PoW challenge) — accepted as a soft, spammable signal, not
-  a trust signal
+- Plain HTTP endpoint on the App View: `POST /events/:did/:rkey/interested`
+- Increments a SQLite counter (the original design below called for
+  Postgres — actual build uses SQLite everywhere, simpler for this scale);
+  no long-term session/IP linkage
+- Anti-bot: short-lived signed token from `GET /challenge`, required on
+  the write — accepted as a soft, spammable signal, not a trust signal
 
 Event pages display both numbers separately and labeled, so users understand
 which is cryptographically attributable vs. a vibe-check.
@@ -80,9 +81,10 @@ This scatters attendance data across individual repos rather than one
 scrapeable list. Full draft in `lexicons/rsvp.json`.
 
 ### Comments/discussion
-Deferred — likely reuse `app.bsky.feed.post` with a reply-style ref, or a
-dedicated `org.micelio.comment` if full separation from Bluesky's graph
-is wanted. Not required for MVP.
+Shipped as Track 2 (anonymous, no atproto record, no account) — plain
+SQLite rows on the App View, same trust model as the interest counter.
+Not `app.bsky.feed.post` or a new lexicon; a moderator can delete
+individual comments but there's no per-comment report step yet.
 
 ---
 
@@ -93,17 +95,20 @@ is wanted. Not required for MVP.
 - Custom lexicons registered for event/rsvp record types
 
 **App View (indexing + serving)**
-- Firehose consumer (or polling own PDS pre-federation) → indexes into
-  Postgres
-- API layer: Node (Fastify) or Elixir/Phoenix
-- Postgres + PostGIS for geo queries (events near a São Paulo neighborhood)
+- Fastify (Node), SQLite (not Postgres — actual build, see Track 2 above)
+- v0 reads fan out live to the PDS's own repos; a firehose consumer +
+  indexer exist (`appview/src/indexer.js`) and pass their fixtures, but
+  stay off (`INDEXER_ENABLED=false`) until `docs/firehose-indexer-spec.md`'s
+  trigger condition is hit
+- PostGIS/geo queries not built — no map view yet, see MVP scope
 - Separate lightweight endpoint(s) for the anonymous interest counter —
   plain DB increment, no atproto involvement
 
 **Frontend**
-- SSR framework (SvelteKit or Astro) — read-heavy, low-JS fits the format
-- Map view via Leaflet + OpenStreetMap tiles (not Google Maps)
-- OAuth-via-atproto for the pseudonymous login flow
+- SvelteKit — read-heavy, low-JS fits the format
+- Map view via Leaflet + OpenStreetMap tiles — not built yet
+- Login is currently handle+password against the PDS session API;
+  OAuth-via-atproto (the original plan) isn't built yet
 
 **Ops / opsec**
 - Hosting jurisdiction chosen deliberately
@@ -121,13 +126,15 @@ is wanted. Not required for MVP.
 - View event list + single event page
 - RSVP via account (`org.micelio.rsvp`)
 - Anonymous "interested" counter (no account)
+- Anonymous comments (no account) + basic moderation (report/hide, delete)
 - Self-hosted single PDS, no federation with wider atproto network yet
 - Query own PDS directly for v0 (skip firehose/App View indexer initially)
 
 **Explicitly out of scope for MVP:**
 - Federation with Bluesky/wider atproto network
-- Full App View firehose indexer (add once core loop is proven)
-- Comments/discussion threads
+- Turning the firehose indexer on (built and tested, stays off until its
+  documented trigger condition is hit — see `docs/firehose-indexer-spec.md`)
+- Map view / geo queries
 - Tor onion service
 - Real access control for "restricted" events (relies on out-of-band
   channels instead)
@@ -153,7 +160,7 @@ Compresses "usable by our group" milestone to under 2 weeks.
 
 ## Open questions / next decisions
 - [x] Decide project name — **micelio**, lexicon namespace `org.micelio.*`
-- [ ] Anti-bot approach for anonymous counter (signed token vs. PoW vs. accept spam)
+- [x] Anti-bot approach for anonymous counter — signed short-lived token from `GET /challenge`
 - [ ] Comment/discussion model (reuse bsky posts vs. custom lexicon) — post-MVP
 - [ ] Hosting jurisdiction for PDS
 - [ ] Moderation policy for event creation (who can post, verification process)

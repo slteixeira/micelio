@@ -3,6 +3,7 @@ import cors from "@fastify/cors";
 import rateLimit from "@fastify/rate-limit";
 import eventRoutes from "./routes/events.js";
 import moderationRoutes from "./routes/moderation.js";
+import { issueChallenge } from "./antibot.js";
 
 const app = Fastify({ logger: true });
 
@@ -23,5 +24,6 @@ app.register(eventRoutes);
 app.register(moderationRoutes);
 
 app.get("/health", async () => ({ ok: true }));
+app.get("/challenge", async () => issueChallenge());
 
 app.listen({ port: Number(process.env.PORT) || 8080, host: "0.0.0.0" });
